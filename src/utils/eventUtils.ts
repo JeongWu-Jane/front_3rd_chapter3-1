@@ -8,11 +8,11 @@ function filterEventsByDateRange(events: Event[], start: Date, end: Date): Event
   });
 }
 
-export function containsTerm(target: string, term: string) {
+function containsTerm(target: string, term: string) {
   return target.toLowerCase().includes(term.toLowerCase());
 }
 
-export function searchEvents(events: Event[], term: string) {
+function searchEvents(events: Event[], term: string) {
   return events.filter(
     ({ title, description, location }) =>
       containsTerm(title, term) || containsTerm(description, term) || containsTerm(location, term)
