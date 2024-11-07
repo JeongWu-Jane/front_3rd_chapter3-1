@@ -8,73 +8,138 @@ import {
   Input,
   Select,
   Tooltip,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
-import { RepeatType, Event } from '../types';
+import { RepeatType, Event, EventForm } from '../types';
 import { categories, notificationOptions } from '../const';
 import { getTimeErrorMessage } from '../utils/timeValidation';
+import { findOverlappingEvents } from '../utils/eventOverlap';
+import { useEventForm } from '../hooks/useEventForm.ts';
 
 interface EventEditorProps {
-  editingEvent: Event | null;
-  title: string;
-  setTitle: React.Dispatch<React.SetStateAction<string>>;
-  date: string;
-  setDate: React.Dispatch<React.SetStateAction<string>>;
-  startTimeError: string | null;
-  startTime: string;
-  handleStartTimeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  endTime: string;
-  endTimeError: string | null;
-  handleEndTimeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  description: string;
-  setDescription: React.Dispatch<React.SetStateAction<string>>;
-  location: string;
-  setLocation: React.Dispatch<React.SetStateAction<string>>;
-  category: string;
-  setCategory: React.Dispatch<React.SetStateAction<string>>;
-  isRepeating: boolean;
-  setIsRepeating: React.Dispatch<React.SetStateAction<boolean>>;
-  notificationTime: number;
-  setNotificationTime: React.Dispatch<React.SetStateAction<number>>;
-  repeatType: RepeatType;
-  setRepeatType: React.Dispatch<React.SetStateAction<RepeatType>>;
-  repeatInterval: number;
-  setRepeatInterval: React.Dispatch<React.SetStateAction<number>>;
-  repeatEndDate: string;
-  setRepeatEndDate: React.Dispatch<React.SetStateAction<string>>;
-  addOrUpdateEvent: () => Promise<void>;
+  // editingEvent: Event | null;
+  // title: string;
+  // setTitle: React.Dispatch<React.SetStateAction<string>>;
+  // date: string;
+  // setDate: React.Dispatch<React.SetStateAction<string>>;
+  // startTimeError: string | null;
+  // startTime: string;
+  // handleStartTimeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  // endTime: string;
+  // endTimeError: string | null;
+  // handleEndTimeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  // description: string;
+  // setDescription: React.Dispatch<React.SetStateAction<string>>;
+  // location: string;
+  // setLocation: React.Dispatch<React.SetStateAction<string>>;
+  // category: string;
+  // setCategory: React.Dispatch<React.SetStateAction<string>>;
+  // isRepeating: boolean;
+  // setIsRepeating: React.Dispatch<React.SetStateAction<boolean>>;
+  // notificationTime: number;
+  // setNotificationTime: React.Dispatch<React.SetStateAction<number>>;
+  // repeatType: RepeatType;
+  // setRepeatType: React.Dispatch<React.SetStateAction<RepeatType>>;
+  // repeatInterval: number;
+  // setRepeatInterval: React.Dispatch<React.SetStateAction<number>>;
+  // repeatEndDate: string;
+  // setRepeatEndDate: React.Dispatch<React.SetStateAction<string>>;
+  events: Event[];
+  // findOverlappingEvents: (event: Event) => Event[];
+  setOverlappingEvents: React.Dispatch<React.SetStateAction<Event[]>>;
+  saveEvent: (eventData: Event | EventForm) => Promise<void>;
+  setIsOverlapDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+
+  // addOrUpdateEvent: () => Promise<void>;
 }
 
 export function EventEditor({
-  editingEvent,
-  title,
-  setTitle,
-  date,
-  setDate,
-  startTimeError,
-  startTime,
-  handleStartTimeChange,
-  endTime,
-  endTimeError,
-  handleEndTimeChange,
-  description,
-  setDescription,
-  location,
-  setLocation,
-  category,
-  setCategory,
-  isRepeating,
-  setIsRepeating,
-  notificationTime,
-  setNotificationTime,
-  repeatType,
-  setRepeatType,
-  repeatInterval,
-  setRepeatInterval,
-  repeatEndDate,
-  setRepeatEndDate,
-  addOrUpdateEvent,
+  events,
+  setOverlappingEvents,
+  saveEvent,
+  setIsOverlapDialogOpen,
 }: EventEditorProps) {
+  const {
+    title,
+    setTitle,
+    date,
+    setDate,
+    startTime,
+    endTime,
+    description,
+    setDescription,
+    location,
+    setLocation,
+    category,
+    setCategory,
+    isRepeating,
+    setIsRepeating,
+    repeatType,
+    setRepeatType,
+    repeatInterval,
+    setRepeatInterval,
+    repeatEndDate,
+    setRepeatEndDate,
+    notificationTime,
+    setNotificationTime,
+    startTimeError,
+    endTimeError,
+    editingEvent,
+    handleStartTimeChange,
+    handleEndTimeChange,
+    resetForm,
+  } = useEventForm();
+  const toast = useToast();
+
+  const addOrUpdateEvent = async () => {
+    if (!title || !date || !startTime || !endTime) {
+      toast({
+        title: '필수 정보를 모두 입력해주세요.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (startTimeError || endTimeError) {
+      toast({
+        title: '시간 설정을 확인해주세요.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const eventData: Event | EventForm = {
+      id: editingEvent ? editingEvent.id : undefined,
+      title,
+      date,
+      startTime,
+      endTime,
+      description,
+      location,
+      category,
+      repeat: {
+        type: isRepeating ? repeatType : 'none',
+        interval: repeatInterval,
+        endDate: repeatEndDate || undefined,
+      },
+      notificationTime,
+    };
+
+    const overlapping = findOverlappingEvents(eventData, events);
+    if (overlapping.length > 0) {
+      setOverlappingEvents(overlapping);
+      setIsOverlapDialogOpen(true);
+    } else {
+      await saveEvent(eventData);
+      resetForm();
+    }
+  };
+
   return (
     <VStack w="400px" spacing={5} align="stretch">
       <Heading>{editingEvent ? '일정 수정' : '일정 추가'}</Heading>

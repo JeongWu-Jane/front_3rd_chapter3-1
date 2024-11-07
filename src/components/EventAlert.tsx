@@ -8,12 +8,12 @@ import {
   Button,
   Text,
 } from '@chakra-ui/react';
-import { RefObject } from 'react';
+import { useRef } from 'react';
 import { Event, EventForm, RepeatType } from '../types';
 
 interface EventAlertProps {
   isOverlapDialogOpen: boolean;
-  cancelRef: RefObject<HTMLButtonElement>;
+  // cancelRef: RefObject<HTMLButtonElement>;
   setIsOverlapDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   overlappingEvents: Event[];
   saveEvent: (eventData: Event | EventForm) => Promise<void>;
@@ -34,7 +34,6 @@ interface EventAlertProps {
 
 export function EventAlert({
   isOverlapDialogOpen,
-  cancelRef,
   setIsOverlapDialogOpen,
   overlappingEvents,
   saveEvent,
@@ -52,6 +51,7 @@ export function EventAlert({
   repeatEndDate,
   notificationTime,
 }: EventAlertProps) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
   return (
     <AlertDialog
       isOpen={isOverlapDialogOpen}

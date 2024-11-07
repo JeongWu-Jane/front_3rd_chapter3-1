@@ -4,26 +4,20 @@ import { Heading, HStack, IconButton, Select, VStack } from '@chakra-ui/react';
 import { WeekView } from './WeekView';
 import { Event } from '../types';
 import { MonthView } from './MonthView';
+import { useCalendarView } from '../hooks/useCalendarView.ts';
 
 interface CalendarViewProps {
-  navigate: (direction: 'prev' | 'next') => void;
-  view: 'week' | 'month';
-  setView: React.Dispatch<React.SetStateAction<'week' | 'month'>>;
-  currentDate: Date;
+  // navigate: (direction: 'prev' | 'next') => void;
+  // view: 'week' | 'month';
+  // setView: React.Dispatch<React.SetStateAction<'week' | 'month'>>;
+  // currentDate: Date;
   filteredEvents: Event[];
   notifiedEvents: string[];
-  holidays: { [key: string]: string };
+  // holidays: { [key: string]: string };
 }
 
-export function CalendarView({
-  navigate,
-  view,
-  holidays,
-  setView,
-  currentDate,
-  filteredEvents,
-  notifiedEvents,
-}: CalendarViewProps) {
+export function CalendarView({ filteredEvents, notifiedEvents }: CalendarViewProps) {
+  const { view, setView, currentDate, holidays, navigate } = useCalendarView();
   return (
     <VStack flex={1} spacing={5} align="stretch">
       <Heading>일정 보기</Heading>

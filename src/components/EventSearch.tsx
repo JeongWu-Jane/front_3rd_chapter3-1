@@ -11,24 +11,31 @@ import {
 } from '@chakra-ui/react';
 import { Event } from '../types';
 import { notificationOptions } from '../const';
+import { useSearch } from '../hooks/useSearch';
 
 interface EventSearchProps {
   searchTerm: string;
-  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  // setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   filteredEvents: Event[];
   notifiedEvents: string[];
   editEvent: (event: Event) => void;
   deleteEvent: (id: string) => Promise<void>;
+  events: Event[];
+  currentDate: Date;
+  view: 'week' | 'month';
 }
 
 export function EventSearch({
+  events,
+  currentDate,
+  view,
   searchTerm,
-  setSearchTerm,
   filteredEvents,
   notifiedEvents,
   editEvent,
   deleteEvent,
 }: EventSearchProps) {
+  const { setSearchTerm } = useSearch(events, currentDate, view);
   return (
     <VStack data-testid="event-list" w="500px" h="full" overflowY="auto">
       <FormControl>
